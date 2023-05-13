@@ -19,6 +19,10 @@ const Product = sequelize.define("product", {
     type: Sequelize.DECIMAL,
     allowNull: false
   }
+}, {
+  sequelize,
+  timestamps: false,
+  modelName: 'Product'
 });
 
 export default Product;

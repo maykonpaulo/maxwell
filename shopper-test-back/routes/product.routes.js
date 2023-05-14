@@ -30,9 +30,17 @@ productRouter.get("/:code", async (req, res) => {
 // update product
 productRouter.put("/:code", async (req, res) => {
   try {
-    const allPacks = await Pack.findAll()
 
+    //Req Rules
+    const product = await Product.findOne({where: {code: req.params.code}})
+console.log(typeof parseFloat(req.body.sales_price))
 
+// the new sales_price must be greater than the product cost_price.
+if (parseFloat(req.body.sales_price) <= parseFloat(product.cost_price)) {
+  return res.status(400).json({ error: "O preço de venda deve ser maior que o preço de custo." });
+}
+
+// the new sales_price must be 10% greater than the current sales_price
     const updatedProduct = await Product.update(
       {
         name: req.body.name,
@@ -44,6 +52,7 @@ productRouter.put("/:code", async (req, res) => {
 
     // If the product is in a pack, change the pack price
     const allProducts = await Product.findAll()
+    const allPacks = await Pack.findAll()
 
     let packProducts = []
     let packQty = []
@@ -116,35 +125,6 @@ if (packIds.length === 1) {
     {where: {code: packIds[0]}})
   console.log(packProduct)
 }
-
-// if (packIds.length === 1) {
-//   const packProduct = await Product.findOne({ where: {
-//     code: packIds[0]
-//   }})
-//   console.console.log("AQUI");
-
-//   // allProducts.forEach(async (currentProduct) => {
-//   //   if (currentProduct.code == req.params.code) {
-//   //     allPackPrice += parseFloat(currentProduct.sales_price)
-//   //    finalProductPrice = (allPackPrice / productQty).toFixed(2)
-//   //    console.log(typeof allPackPrice)
-//   //    console.log(allPackPrice)
-//   //    console.log(typeof finalProductPrice)
-//   //    console.log(finalProductPrice)
-//   //    console.log(finalProductPrice.toString())
-//   //   }
-//   //   if (currentProduct.dataValues.code == packIds[0]) {
-//   //     await Product.update(
-//   //       {
-//   //         name: req.body.name,
-//   //           cost_price: req.body.cost_price,
-//   //           sales_price: finalProductPrice
-//   //       },
-//   //        { where: { code: packIds[0] }, }
-//   //     )
-//   //   }
-//   // })
-// }
 
     return res.status(200).json(updatedProduct);
   } catch (err) {

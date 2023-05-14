@@ -45,40 +45,36 @@ productRouter.put("/:code", async (req, res) => {
     // If the product is in a pack, change the pack price
     const allProducts = await Product.findAll()
 
-let packProducts = []
-let packQty = []
-let productPrice = []
-let packPrice = 0
-let packId = 0
+    let packProducts = []
+    let packQty = []
+    let productPrice = []
+    let packPrice = 0
+    let packId = 0
 
     allPacks.forEach(async (currentPack) => {
 
-if (currentPack.dataValues.product_id == req.params.code) {
-  allPacks.forEach(async (current) => {
+    if (currentPack.dataValues.product_id == req.params.code) {
+      allPacks.forEach(async (current) => {
     if (current.dataValues.pack_id == currentPack.dataValues.pack_id) {
       packProducts.push(current.dataValues.product_id)
       packQty.push(current.dataValues.qty)
       packId = current.dataValues.pack_id
-
     }
-  })
-}
-
-
-
+      })
+    }
     })
 
-allProducts.forEach(async (currentProduct) => {
-packProducts.forEach(async (current) => {
-  if (currentProduct.dataValues.code == current) {
-    productPrice.push(currentProduct.dataValues.sales_price)
-  }
-})
-})
+    allProducts.forEach(async (currentProduct) => {
+      packProducts.forEach(async (current) => {
+        if (currentProduct.dataValues.code == current) {
+        productPrice.push(currentProduct.dataValues.sales_price)
+      }
+      })
+    })
 
-productPrice.map((currentPrice, index) => {
-  packQty.map((currentQty, i) => {
-    if (i === index) {
+    productPrice.map((currentPrice, index) => {
+      packQty.map((currentQty, i) => {
+        if (i === index) {
       packPrice += currentPrice * currentQty
     }
   })
@@ -96,8 +92,7 @@ productPrice.map((currentPrice, index) => {
 // Update a pack price and update the product price
 let packIds = []
 let productQty = 0
-let allPackPrice = ""
-let finalProductPrice = 0
+let allPackPrice = 0
 if (req.params.code.length >= 4) {
   allPacks.forEach(async (currentPack) => {
 if (currentPack.dataValues.pack_id == req.params.code) {
@@ -106,26 +101,50 @@ if (currentPack.dataValues.pack_id == req.params.code) {
 }
   })
 }
+console.log(packIds)
 
 if (packIds.length === 1) {
-  allProducts.forEach(async (currentProduct) => {
-    if (currentProduct.code == req.params.code) {
-      allPackPrice += currentProduct.sales_price
-     finalProductPrice = allPackPrice / productQty
-     console.log(finalProductPrice.toString())
-    }
-    if (currentProduct.dataValues.code == packIds[0]) {
-      await Product.update(
-        {
-          name: req.body.name,
-            cost_price: req.body.cost_price,
-            sales_price: finalProductPrice.toString()
-        },
-         { where: { code: packIds[0] }, }
-      )
-    }
-  })
+  const packAsProduct = await Product.findOne({ where: {code: req.params.code}})
+  allPackPrice = parseFloat(packAsProduct.dataValues.sales_price)
+  console.log(allPackPrice)
+  let finalProductPrice = (allPackPrice / productQty).toFixed(2)
+  console.log(finalProductPrice)
+
+  const packProduct = await Product.update({name: req.body.name,
+    cost_price: req.body.cost_price,
+    sales_price: finalProductPrice},
+    {where: {code: packIds[0]}})
+  console.log(packProduct)
 }
+
+// if (packIds.length === 1) {
+//   const packProduct = await Product.findOne({ where: {
+//     code: packIds[0]
+//   }})
+//   console.console.log("AQUI");
+
+//   // allProducts.forEach(async (currentProduct) => {
+//   //   if (currentProduct.code == req.params.code) {
+//   //     allPackPrice += parseFloat(currentProduct.sales_price)
+//   //    finalProductPrice = (allPackPrice / productQty).toFixed(2)
+//   //    console.log(typeof allPackPrice)
+//   //    console.log(allPackPrice)
+//   //    console.log(typeof finalProductPrice)
+//   //    console.log(finalProductPrice)
+//   //    console.log(finalProductPrice.toString())
+//   //   }
+//   //   if (currentProduct.dataValues.code == packIds[0]) {
+//   //     await Product.update(
+//   //       {
+//   //         name: req.body.name,
+//   //           cost_price: req.body.cost_price,
+//   //           sales_price: finalProductPrice
+//   //       },
+//   //        { where: { code: packIds[0] }, }
+//   //     )
+//   //   }
+//   // })
+// }
 
     return res.status(200).json(updatedProduct);
   } catch (err) {

@@ -72,7 +72,6 @@ allProducts.forEach(async (currentProduct) => {
 packProducts.forEach(async (current) => {
   if (currentProduct.dataValues.code == current) {
     productPrice.push(currentProduct.dataValues.sales_price)
-    console.log(productPrice)
   }
 })
 })
@@ -81,8 +80,6 @@ productPrice.map((currentPrice, index) => {
   packQty.map((currentQty, i) => {
     if (i === index) {
       packPrice += currentPrice * currentQty
-      console.log(productPrice)
-
     }
   })
 })
@@ -96,12 +93,39 @@ productPrice.map((currentPrice, index) => {
        { where: { code: packId }, }
     )
 
-    console.log(packPrice)
-
 // Update a pack price and update the product price
-// if (product.dataValues.code.length >= 4) {
-//   console.log(product)
-// }
+let packIds = []
+let productQty = 0
+let allPackPrice = ""
+let finalProductPrice = 0
+if (req.params.code.length >= 4) {
+  allPacks.forEach(async (currentPack) => {
+if (currentPack.dataValues.pack_id == req.params.code) {
+  packIds.push(currentPack.dataValues.product_id)
+  productQty = currentPack.dataValues.qty
+}
+  })
+}
+
+if (packIds.length === 1) {
+  allProducts.forEach(async (currentProduct) => {
+    if (currentProduct.code == req.params.code) {
+      allPackPrice += currentProduct.sales_price
+     finalProductPrice = allPackPrice / productQty
+     console.log(finalProductPrice.toString())
+    }
+    if (currentProduct.dataValues.code == packIds[0]) {
+      await Product.update(
+        {
+          name: req.body.name,
+            cost_price: req.body.cost_price,
+            sales_price: finalProductPrice.toString()
+        },
+         { where: { code: packIds[0] }, }
+      )
+    }
+  })
+}
 
     return res.status(200).json(updatedProduct);
   } catch (err) {

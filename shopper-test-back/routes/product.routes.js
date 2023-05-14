@@ -1,16 +1,17 @@
 import express from "express";
 import Product from "../model/product.model.js"
 import Pack from "../model/pack.model.js";
-import { productController } from "../controller/product.controller.js";
+import { getAllProductsController } from "../modules/getAllProducts/getAllProducts.controller.js";
+import { getOneProductController } from "../modules/getOneProduct/getOneProduct.controller.js";
 
 const productRouter = express.Router()
 
 
 // Read all products
-productRouter.get("", productController.getAllProducts);
+productRouter.get("", getAllProductsController.handle);
 
 // Read one product
-productRouter.get("/:code", productController.getOneProduct);
+productRouter.get("/:code", getOneProductController.handle);
 
 // update product
 productRouter.put("/:code", async (req, res) => {
